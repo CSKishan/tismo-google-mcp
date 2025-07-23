@@ -53,8 +53,20 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen">
-      <div className="w-1/5 bg-gray-200 p-4">
+    <div className="h-screen w-screen">
+      {isLoaded ? (
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={center}
+          zoom={10}
+        >
+          {/* Child components, such as markers, info windows, etc. */}
+          <></>
+        </GoogleMap>
+      ) : (
+        <></>
+      )}
+      <div className="absolute top-0 left-0 h-full w-1/5 bg-gray-200 p-4">
         <h2 className="text-lg font-bold mb-4">Configuration</h2>
         <div className="mb-4">
           <label htmlFor="location" className="block font-bold mb-2">
@@ -118,20 +130,6 @@ export default function Home() {
         >
           Search
         </button>
-      </div>
-      <div className="w-4/5">
-        {isLoaded ? (
-          <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={10}
-          >
-            {/* Child components, such as markers, info windows, etc. */}
-            <></>
-          </GoogleMap>
-        ) : (
-          <></>
-        )}
       </div>
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-white p-4 overflow-y-auto">
         <h2 className="text-lg font-bold mb-4">Company List</h2>
