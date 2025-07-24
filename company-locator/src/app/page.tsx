@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -16,6 +16,7 @@ export default function Home() {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries: ["places"],
   });
 
   const [location, setLocation] = useState("");
@@ -27,6 +28,9 @@ export default function Home() {
   const [configCollapsed, setConfigCollapsed] = useState(false);
   const [companyListCollapsed, setCompanyListCollapsed] = useState(false);
   const [thingsToKnowCollapsed, setThingsToKnowCollapsed] = useState(false);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
 
   const handleSearch = () => {
     const geocoder = new window.google.maps.Geocoder();
@@ -35,6 +39,8 @@ export default function Home() {
         const lat = results[0].geometry?.location?.lat();
         const lng = results[0].geometry?.location?.lng();
         if (lat && lng) {
+          setLat(lat);
+          setLng(lng);
           const service = new window.google.maps.places.PlacesService(
             document.createElement("div")
           );
@@ -62,6 +68,7 @@ export default function Home() {
           mapContainerStyle={containerStyle}
           center={center}
           zoom={10}
+          onLoad={(map) => setMap(map)}
         >
           {/* Child components, such as markers, info windows, etc. */}
           <></>
@@ -71,13 +78,13 @@ export default function Home() {
       )}
       {configCollapsed ? (
         <div
-          className="absolute top-1/2 left-0 transform -translate-y-1/2 h-3/4 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
+          className="absolute top-1/2 left-0 transform -translate-y-1/2 h-5/6 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
           onClick={() => setConfigCollapsed(false)}
         >
           <p className="transform rotate-90">Configuration</p>
         </div>
       ) : (
-        <div className="absolute top-1/2 left-8 transform -translate-y-1/2 h-3/4 w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+        <div className="absolute top-1/2 left-8 transform -translate-y-1/2 h-5/6 w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
           <button
             className="absolute top-2 right-2"
             onClick={() => setConfigCollapsed(true)}
@@ -89,13 +96,38 @@ export default function Home() {
             <label htmlFor="location" className="block font-bold mb-2">
               Current Location
             </label>
-            <input
-              type="text"
-              id="location"
-              className="w-full border border-gray-400 p-2"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+            <Autocomplete>
+              <input
+                type="text"
+                id="location"
+                className="w-full border border-gray-400 p-2"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            </Autocomplete>
+            <button
+              className="mt-2"
+              onClick={() => {
+                navigator.geolocation.getCurrentPosition((position) => {
+                  const lat = position.coords.latitude;
+                  const lng = position.coords.longitude;
+                  setLat(lat);
+                  setLng(lng);
+                  if (map) {
+                    map.panTo({ lat, lng });
+                    map.setZoom(15);
+                  }
+                  const geocoder = new window.google.maps.Geocoder();
+                  geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                    if (status === "OK" && results) {
+                      setLocation(results[0].formatted_address);
+                    }
+                  });
+                });
+              }}
+            >
+              O
+            </button>
           </div>
           <div className="mb-4">
             <label htmlFor="radius" className="block font-bold mb-2">
@@ -147,6 +179,12 @@ export default function Home() {
           >
             Search
           </button>
+        {lat && lng && (
+          <div className="mt-4">
+            <div>Longitude: {lng}</div>
+            <div>Latitude: {lat}</div>
+          </div>
+        )}
         </div>
       )}
       {companyListCollapsed ? (
