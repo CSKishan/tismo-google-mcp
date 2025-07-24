@@ -34,6 +34,8 @@ export default function Home() {
   const [currentLocationMarker, setCurrentLocationMarker] = useState<google.maps.Marker | null>(null);
   const [activeTab, setActiveTab] = useState("Briefing");
   const [radiusUnit, setRadiusUnit] = useState("km");
+  const [companyType, setCompanyType] = useState("All");
+  const [customCompanyType, setCustomCompanyType] = useState("");
 
   const handleSearch = () => {
     const geocoder = new window.google.maps.Geocoder();
@@ -66,11 +68,17 @@ export default function Home() {
           const service = new window.google.maps.places.PlacesService(
             document.createElement("div")
           );
+          const type =
+            companyType === "Custom"
+              ? customCompanyType
+              : companyType === "All"
+              ? "software_company"
+              : companyType.toLowerCase();
           service.nearbySearch(
             {
               location: { lat, lng },
-              radius: radius * 1000,
-              type: "software_company",
+              radius: radius * (radiusUnit === "km" ? 1000 : 1),
+              type,
             },
             (results, status) => {
               if (status === "OK" && results) {
@@ -97,6 +105,25 @@ export default function Home() {
               const lng = e.latLng.lng();
               setLat(lat);
               setLng(lng);
+              if (map) {
+                map.panTo({ lat, lng });
+                map.setZoom(15);
+                if (currentLocationMarker) {
+                  currentLocationMarker.setMap(null);
+                }
+                const marker = new window.google.maps.Marker({
+                  position: { lat, lng },
+                  map,
+                  icon: {
+                    path: window.google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: "blue",
+                    fillOpacity: 1,
+                    strokeWeight: 0,
+                  },
+                });
+                setCurrentLocationMarker(marker);
+              }
               const geocoder = new window.google.maps.Geocoder();
               geocoder.geocode({ location: { lat, lng } }, (results, status) => {
                 if (status === "OK" && results) {
@@ -234,6 +261,31 @@ export default function Home() {
             </div>
           </div>
           <div className="mb-4">
+            <label htmlFor="companyType" className="block font-bold mb-2">
+              Company Type
+            </label>
+            <select
+              id="companyType"
+              className="w-full border border-gray-400 p-2"
+              value={companyType}
+              onChange={(e) => setCompanyType(e.target.value)}
+            >
+              <option value="All">All</option>
+              <option value="Software">Software</option>
+              <option value="Firmware">Firmware</option>
+              <option value="Embedded">Embedded</option>
+              <option value="Custom">Custom</option>
+            </select>
+            {companyType === "Custom" && (
+              <input
+                type="text"
+                className="w-full border border-gray-400 p-2 mt-2"
+                value={customCompanyType}
+                onChange={(e) => setCustomCompanyType(e.target.value)}
+              />
+            )}
+          </div>
+          <div className="mb-4">
             <label htmlFor="transportation" className="block font-bold mb-2">
               Transportation
             </label>
@@ -303,15 +355,17 @@ export default function Home() {
           <p className="transform rotate-90">Company List</p>
         </div>
       ) : (
-        <div className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 overflow-y-auto rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
-          <button
-            className="absolute top-2 right-2"
-            onClick={() => setCompanyListCollapsed(true)}
-          >
-            X
-          </button>
-          <h2 className="text-lg font-bold mb-4">Company List</h2>
-          <ul>
+        <div className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg flex flex-col" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+          <div className="flex-shrink-0">
+            <button
+              className="absolute top-2 right-2"
+              onClick={() => setCompanyListCollapsed(true)}
+            >
+              X
+            </button>
+            <h2 className="text-lg font-bold mb-4">Company List</h2>
+          </div>
+          <ul className="overflow-y-auto">
             {companies.map((company) => (
               <li
                 key={company.place_id}
@@ -402,7 +456,37 @@ export default function Home() {
                 {activeTab === "People" && <div>People</div>}
                 {activeTab === "Connect" && <div>Connect</div>}
                 {activeTab === "Travel" && <div>Travel</div>}
-                {activeTab === "News" && <div>News</div>}
+                {activeTab === "News" && (
+                  <div>
+                    <ul>
+                      <li>
+                        <a href="#" target="_blank">
+                          News Article 1
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" target="_blank">
+                          News Article 2
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" target="_blank">
+                          News Article 3
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" target="_blank">
+                          News Article 4
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" target="_blank">
+                          News Article 5
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           )}
