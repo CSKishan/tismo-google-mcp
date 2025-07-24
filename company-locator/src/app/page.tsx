@@ -66,9 +66,9 @@ export default function Home() {
       ) : (
         <></>
       )}
-      <div className="absolute top-16 left-16 h-full w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
-        <h2 className="text-lg font-bold mb-4">Configuration</h2>
-        <div className="mb-4">
+      <div className="absolute top-16 left-16 h-full w-1/5 bg-gray-200 p-2 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+        <h2 className="text-lg font-bold mb-2">Configuration</h2>
+        <div className="mb-2">
           <label htmlFor="location" className="block font-bold mb-2">
             Current Location
           </label>
@@ -131,8 +131,8 @@ export default function Home() {
           Search
         </button>
       </div>
-      <div className="absolute top-16 right-16 w-1/3 h-1/3 bg-white p-4 overflow-y-auto rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
-        <h2 className="text-lg font-bold mb-4">Company List</h2>
+      <div className="absolute top-16 right-16 w-1/3 h-1/3 bg-white p-2 overflow-y-auto rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+        <h2 className="text-lg font-bold mb-2">Company List</h2>
         <ul>
           {companies.map((company) => (
             <li
@@ -145,7 +145,7 @@ export default function Home() {
           ))}
         </ul>
       </div>
-      <div className="absolute bottom-16 right-16 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+      <div className="absolute bottom-16 right-16 w-1/3 h-1/3 bg-white p-2 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
         {selectedCompany && (
           <div>
             <div className="flex">
