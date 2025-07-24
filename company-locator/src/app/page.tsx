@@ -31,6 +31,7 @@ export default function Home() {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+  const [currentLocationMarker, setCurrentLocationMarker] = useState<google.maps.Marker | null>(null);
 
   const handleSearch = () => {
     const geocoder = new window.google.maps.Geocoder();
@@ -137,6 +138,21 @@ export default function Home() {
                   if (map) {
                     map.panTo({ lat, lng });
                     map.setZoom(15);
+                    if (currentLocationMarker) {
+                      currentLocationMarker.setMap(null);
+                    }
+                    const marker = new window.google.maps.Marker({
+                      position: { lat, lng },
+                      map,
+                      icon: {
+                        path: window.google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: "blue",
+                        fillOpacity: 1,
+                        strokeWeight: 0,
+                      },
+                    });
+                    setCurrentLocationMarker(marker);
                   }
                   const geocoder = new window.google.maps.Geocoder();
                   geocoder.geocode({ location: { lat, lng } }, (results, status) => {
@@ -204,12 +220,28 @@ export default function Home() {
               <option value="60">60</option>
             </select>
           </div>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={handleSearch}
-          >
-            Search
-          </button>
+          <div className="flex">
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={handleSearch}
+            >
+              Search
+            </button>
+            <button
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2"
+              onClick={() => {
+                setLocation("");
+                setRadius(5);
+                setTransportation("walking");
+                setDuration(30);
+                setCompanies([]);
+                setLat(null);
+                setLng(null);
+              }}
+            >
+              Clear
+            </button>
+          </div>
         {lat && lng && (
           <div className="mt-4">
             <div>Longitude: {lng}</div>
@@ -240,6 +272,19 @@ export default function Home() {
                 key={company.place_id}
                 onClick={() => setSelectedCompany(company)}
                 className="cursor-pointer hover:bg-gray-200"
+                onMouseEnter={() => {
+                  if (map && company.geometry?.location) {
+                    map.panTo(company.geometry.location);
+                    const marker = new window.google.maps.Marker({
+                      position: company.geometry.location,
+                      map,
+                      animation: window.google.maps.Animation.BOUNCE,
+                    });
+                    setTimeout(() => {
+                      marker.setAnimation(null);
+                    }, 2000);
+                  }
+                }}
               >
                 {company.name}
               </li>
