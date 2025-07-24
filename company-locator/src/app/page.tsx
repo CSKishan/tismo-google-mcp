@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
-import { GoogleMap, useJsApiLoader, Autocomplete, Marker } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Autocomplete,
+  Marker,
+} from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -23,15 +28,19 @@ export default function Home() {
   const [radius, setRadius] = useState(5);
   const [transportation, setTransportation] = useState("walking");
   const [duration, setDuration] = useState(30);
-  const [companies, setCompanies] = useState<google.maps.places.PlaceResult[]>([]);
-  const [selectedCompany, setSelectedCompany] = useState<google.maps.places.PlaceResult | null>(null);
+  const [companies, setCompanies] = useState<google.maps.places.PlaceResult[]>(
+    []
+  );
+  const [selectedCompany, setSelectedCompany] =
+    useState<google.maps.places.PlaceResult | null>(null);
   const [configCollapsed, setConfigCollapsed] = useState(false);
   const [companyListCollapsed, setCompanyListCollapsed] = useState(false);
   const [thingsToKnowCollapsed, setThingsToKnowCollapsed] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
-  const [currentLocationMarker, setCurrentLocationMarker] = useState<google.maps.Marker | null>(null);
+  const [currentLocationMarker, setCurrentLocationMarker] =
+    useState<google.maps.Marker | null>(null);
   const [activeTab, setActiveTab] = useState("Briefing");
   const [radiusUnit, setRadiusUnit] = useState("km");
   const [companyType, setCompanyType] = useState("All");
@@ -46,12 +55,16 @@ export default function Home() {
         if (lat && lng) {
           setLat(lat);
           setLng(lng);
+
+          // Move map and place marker
           if (map) {
             map.panTo({ lat, lng });
             map.setZoom(15);
+
             if (currentLocationMarker) {
               currentLocationMarker.setMap(null);
             }
+
             const marker = new window.google.maps.Marker({
               position: { lat, lng },
               map,
@@ -65,24 +78,84 @@ export default function Home() {
             });
             setCurrentLocationMarker(marker);
           }
+
           const service = new window.google.maps.places.PlacesService(
             document.createElement("div")
           );
-          const type =
+
+          const query =
             companyType === "Custom"
               ? customCompanyType
               : companyType === "All"
-              ? "software_company"
+              ? "software companies"
               : companyType.toLowerCase();
-          service.nearbySearch(
+
+          const searchBounds = new window.google.maps.Circle({
+            center: { lat, lng },
+            radius: radius * (radiusUnit === "km" ? 1000 : 1),
+          }).getBounds();
+
+          // First try with textSearch for better accuracy
+          service.textSearch(
             {
               location: { lat, lng },
               radius: radius * (radiusUnit === "km" ? 1000 : 1),
-              type,
+              query,
             },
-            (results, status) => {
-              if (status === "OK" && results) {
-                setCompanies(results);
+            (textResults, textStatus) => {
+              if (
+                textStatus === google.maps.places.PlacesServiceStatus.OK &&
+                textResults
+              ) {
+                const allResults = [...textResults];
+
+                // Optional: run nearbySearch for broader discovery
+                service.nearbySearch(
+                  {
+                    location: { lat, lng },
+                    radius: radius * (radiusUnit === "km" ? 1000 : 1),
+                    keyword: query,
+                  },
+                  (nearbyResults, nearbyStatus) => {
+                    if (
+                      nearbyStatus ===
+                        google.maps.places.PlacesServiceStatus.OK &&
+                      nearbyResults
+                    ) {
+                      // Deduplicate by place_id
+                      const existingIds = new Set(
+                        allResults.map((p) => p.place_id)
+                      );
+                      nearbyResults.forEach((p) => {
+                        if (!existingIds.has(p.place_id)) {
+                          allResults.push(p);
+                        }
+                      });
+                    }
+                    setCompanies(allResults);
+                  }
+                );
+              } else {
+                console.error("Text search failed:", textStatus);
+                // Fallback to nearbySearch only
+                service.nearbySearch(
+                  {
+                    location: { lat, lng },
+                    radius: radius * (radiusUnit === "km" ? 1000 : 1),
+                    keyword: query,
+                  },
+                  (nearbyResults, nearbyStatus) => {
+                    if (
+                      nearbyStatus ===
+                        google.maps.places.PlacesServiceStatus.OK &&
+                      nearbyResults
+                    ) {
+                      setCompanies(nearbyResults);
+                    } else {
+                      console.error("Nearby search also failed:", nearbyStatus);
+                    }
+                  }
+                );
               }
             }
           );
@@ -125,11 +198,14 @@ export default function Home() {
                 setCurrentLocationMarker(marker);
               }
               const geocoder = new window.google.maps.Geocoder();
-              geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                if (status === "OK" && results) {
-                  setLocation(results[0].formatted_address);
+              geocoder.geocode(
+                { location: { lat, lng } },
+                (results, status) => {
+                  if (status === "OK" && results) {
+                    setLocation(results[0].formatted_address);
+                  }
                 }
-              });
+              );
               if (map) {
                 map.setOptions({ draggableCursor: "" });
               }
@@ -157,7 +233,13 @@ export default function Home() {
           <p className="transform rotate-90">Configuration</p>
         </div>
       ) : (
-        <div className="absolute top-1/2 left-8 transform -translate-y-1/2 h-5/6 w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+        <div
+          className="absolute top-1/2 left-8 transform -translate-y-1/2 h-5/6 w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg"
+          style={{
+            backdropFilter: "blur(10px)",
+            background: "rgba(255, 255, 255, 0.1)",
+          }}
+        >
           <button
             className="absolute top-2 right-2"
             onClick={() => setConfigCollapsed(true)}
@@ -206,11 +288,14 @@ export default function Home() {
                     setCurrentLocationMarker(marker);
                   }
                   const geocoder = new window.google.maps.Geocoder();
-                  geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                    if (status === "OK" && results) {
-                      setLocation(results[0].formatted_address);
+                  geocoder.geocode(
+                    { location: { lat, lng } },
+                    (results, status) => {
+                      if (status === "OK" && results) {
+                        setLocation(results[0].formatted_address);
+                      }
                     }
-                  });
+                  );
                 });
               }}
             >
@@ -339,12 +424,12 @@ export default function Home() {
               Clear
             </button>
           </div>
-        {lat && lng && (
-          <div className="mt-4">
-            <div>Longitude: {lng}</div>
-            <div>Latitude: {lat}</div>
-          </div>
-        )}
+          {lat && lng && (
+            <div className="mt-4">
+              <div>Longitude: {lng}</div>
+              <div>Latitude: {lat}</div>
+            </div>
+          )}
         </div>
       )}
       {companyListCollapsed ? (
@@ -355,7 +440,13 @@ export default function Home() {
           <p className="transform rotate-90">Company List</p>
         </div>
       ) : (
-        <div className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg flex flex-col" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+        <div
+          className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg flex flex-col"
+          style={{
+            backdropFilter: "blur(10px)",
+            background: "rgba(255, 255, 255, 0.1)",
+          }}
+        >
           <div className="flex-shrink-0">
             <button
               className="absolute top-2 right-2"
@@ -391,7 +482,13 @@ export default function Home() {
           <p className="transform rotate-90">Things To Know</p>
         </div>
       ) : (
-        <div className="absolute bottom-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+        <div
+          className="absolute bottom-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg"
+          style={{
+            backdropFilter: "blur(10px)",
+            background: "rgba(255, 255, 255, 0.1)",
+          }}
+        >
           <button
             className="absolute top-2 right-2"
             onClick={() => setThingsToKnowCollapsed(true)}
