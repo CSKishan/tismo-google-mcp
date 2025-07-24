@@ -32,6 +32,8 @@ export default function Home() {
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [currentLocationMarker, setCurrentLocationMarker] = useState<google.maps.Marker | null>(null);
+  const [activeTab, setActiveTab] = useState("Briefing");
+  const [radiusUnit, setRadiusUnit] = useState("km");
 
   const handleSearch = () => {
     const geocoder = new window.google.maps.Geocoder();
@@ -42,6 +44,25 @@ export default function Home() {
         if (lat && lng) {
           setLat(lat);
           setLng(lng);
+          if (map) {
+            map.panTo({ lat, lng });
+            map.setZoom(15);
+            if (currentLocationMarker) {
+              currentLocationMarker.setMap(null);
+            }
+            const marker = new window.google.maps.Marker({
+              position: { lat, lng },
+              map,
+              icon: {
+                path: window.google.maps.SymbolPath.CIRCLE,
+                scale: 10,
+                fillColor: "blue",
+                fillOpacity: 1,
+                strokeWeight: 0,
+              },
+            });
+            setCurrentLocationMarker(marker);
+          }
           const service = new window.google.maps.places.PlacesService(
             document.createElement("div")
           );
@@ -92,6 +113,9 @@ export default function Home() {
             <Marker
               key={company.place_id}
               position={company.geometry?.location}
+              onClick={() => {
+                setSelectedCompany(company);
+              }}
             />
           ))}
         </GoogleMap>
@@ -178,15 +202,36 @@ export default function Home() {
           </div>
           <div className="mb-4">
             <label htmlFor="radius" className="block font-bold mb-2">
-              Search Radius (km)
+              Search Radius
             </label>
-            <input
-              type="number"
-              id="radius"
-              className="w-full border border-gray-400 p-2"
-              value={radius}
-              onChange={(e) => setRadius(parseInt(e.target.value))}
-            />
+            <div className="flex">
+              <input
+                type="number"
+                id="radius"
+                className="w-full border border-gray-400 p-2"
+                value={radius}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  if (value >= 1) {
+                    setRadius(value);
+                  }
+                }}
+              />
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded ml-2"
+                onClick={() => {
+                  if (radiusUnit === "km") {
+                    setRadiusUnit("m");
+                    setRadius(radius * 1000);
+                  } else {
+                    setRadiusUnit("km");
+                    setRadius(radius / 1000);
+                  }
+                }}
+              >
+                {radiusUnit}
+              </button>
+            </div>
           </div>
           <div className="mb-4">
             <label htmlFor="transportation" className="block font-bold mb-2">
@@ -275,14 +320,6 @@ export default function Home() {
                 onMouseEnter={() => {
                   if (map && company.geometry?.location) {
                     map.panTo(company.geometry.location);
-                    const marker = new window.google.maps.Marker({
-                      position: company.geometry.location,
-                      map,
-                      animation: window.google.maps.Animation.BOUNCE,
-                    });
-                    setTimeout(() => {
-                      marker.setAnimation(null);
-                    }, 2000);
                   }
                 }}
               >
@@ -311,16 +348,61 @@ export default function Home() {
           {selectedCompany && (
             <div>
               <div className="flex">
-                <button className="px-4 py-2 bg-gray-400">Briefing</button>
-                <button className="px-4 py-2 bg-gray-300">People</button>
-                <button className="px-4 py-2 bg-gray-300">Connect</button>
-                <button className="px-4 py-2 bg-gray-300">Travel</button>
-                <button className="px-4 py-2 bg-gray-300">News</button>
+                <button
+                  className={`px-4 py-2 ${
+                    activeTab === "Briefing" ? "bg-gray-400" : "bg-gray-300"
+                  }`}
+                  onClick={() => setActiveTab("Briefing")}
+                >
+                  Briefing
+                </button>
+                <button
+                  className={`px-4 py-2 ${
+                    activeTab === "People" ? "bg-gray-400" : "bg-gray-300"
+                  }`}
+                  onClick={() => setActiveTab("People")}
+                >
+                  People
+                </button>
+                <button
+                  className={`px-4 py-2 ${
+                    activeTab === "Connect" ? "bg-gray-400" : "bg-gray-300"
+                  }`}
+                  onClick={() => setActiveTab("Connect")}
+                >
+                  Connect
+                </button>
+                <button
+                  className={`px-4 py-2 ${
+                    activeTab === "Travel" ? "bg-gray-400" : "bg-gray-300"
+                  }`}
+                  onClick={() => setActiveTab("Travel")}
+                >
+                  Travel
+                </button>
+                <button
+                  className={`px-4 py-2 ${
+                    activeTab === "News" ? "bg-gray-400" : "bg-gray-300"
+                  }`}
+                  onClick={() => setActiveTab("News")}
+                >
+                  News
+                </button>
               </div>
               <div className="p-4 bg-white">
-                <h2 className="text-lg font-bold">{selectedCompany.name}</h2>
-                <p>{selectedCompany.vicinity}</p>
-                <p>Rating: {selectedCompany.rating}</p>
+                {activeTab === "Briefing" && (
+                  <div>
+                    <h2 className="text-lg font-bold">
+                      {selectedCompany.name}
+                    </h2>
+                    <p>{selectedCompany.vicinity}</p>
+                    <p>Rating: {selectedCompany.rating}</p>
+                  </div>
+                )}
+                {activeTab === "People" && <div>People</div>}
+                {activeTab === "Connect" && <div>Connect</div>}
+                {activeTab === "Travel" && <div>Travel</div>}
+                {activeTab === "News" && <div>News</div>}
               </div>
             </div>
           )}
