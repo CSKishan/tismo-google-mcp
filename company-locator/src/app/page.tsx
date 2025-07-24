@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { GoogleMap, useJsApiLoader, Autocomplete } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Autocomplete, Marker } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -69,9 +69,30 @@ export default function Home() {
           center={center}
           zoom={10}
           onLoad={(map) => setMap(map)}
+          onClick={(e) => {
+            if (e.latLng) {
+              const lat = e.latLng.lat();
+              const lng = e.latLng.lng();
+              setLat(lat);
+              setLng(lng);
+              const geocoder = new window.google.maps.Geocoder();
+              geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                if (status === "OK" && results) {
+                  setLocation(results[0].formatted_address);
+                }
+              });
+              if (map) {
+                map.setOptions({ draggableCursor: "" });
+              }
+            }
+          }}
         >
-          {/* Child components, such as markers, info windows, etc. */}
-          <></>
+          {companies.map((company) => (
+            <Marker
+              key={company.place_id}
+              position={company.geometry?.location}
+            />
+          ))}
         </GoogleMap>
       ) : (
         <></>
@@ -127,6 +148,16 @@ export default function Home() {
               }}
             >
               O
+            </button>
+            <button
+              className="mt-2"
+              onClick={() => {
+                if (map) {
+                  map.setOptions({ draggableCursor: "crosshair" });
+                }
+              }}
+            >
+              Select from Map
             </button>
           </div>
           <div className="mb-4">
