@@ -24,6 +24,9 @@ export default function Home() {
   const [duration, setDuration] = useState(30);
   const [companies, setCompanies] = useState<google.maps.places.PlaceResult[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<google.maps.places.PlaceResult | null>(null);
+  const [configCollapsed, setConfigCollapsed] = useState(false);
+  const [companyListCollapsed, setCompanyListCollapsed] = useState(false);
+  const [thingsToKnowCollapsed, setThingsToKnowCollapsed] = useState(false);
 
   const handleSearch = () => {
     const geocoder = new window.google.maps.Geocoder();
@@ -66,103 +69,149 @@ export default function Home() {
       ) : (
         <></>
       )}
-      <div className="absolute top-8 left-8 h-full w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
-        <h2 className="text-lg font-bold mb-4">Configuration</h2>
-        <div className="mb-4">
-          <label htmlFor="location" className="block font-bold mb-2">
-            Current Location
-          </label>
-          <input
-            type="text"
-            id="location"
-            className="w-full border border-gray-400 p-2"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="radius" className="block font-bold mb-2">
-            Search Radius (km)
-          </label>
-          <input
-            type="number"
-            id="radius"
-            className="w-full border border-gray-400 p-2"
-            value={radius}
-            onChange={(e) => setRadius(parseInt(e.target.value))}
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="transportation" className="block font-bold mb-2">
-            Transportation
-          </label>
-          <select
-            id="transportation"
-            className="w-full border border-gray-400 p-2"
-            value={transportation}
-            onChange={(e) => setTransportation(e.target.value)}
-          >
-            <option value="walking">Walking</option>
-            <option value="2-wheeler">2-Wheeler</option>
-            <option value="car">Car</option>
-            <option value="public-transport">Public Transport</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="duration" className="block font-bold mb-2">
-            Commute Duration (mins)
-          </label>
-          <select
-            id="duration"
-            className="w-full border border-gray-400 p-2"
-            value={duration}
-            onChange={(e) => setDuration(parseInt(e.target.value))}
-          >
-            <option value="15">15</option>
-            <option value="30">30</option>
-            <option value="45">45</option>
-            <option value="60">60</option>
-          </select>
-        </div>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={handleSearch}
+      {configCollapsed ? (
+        <div
+          className="absolute top-1/2 left-0 transform -translate-y-1/2 h-3/4 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
+          onClick={() => setConfigCollapsed(false)}
         >
-          Search
-        </button>
-      </div>
-      <div className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 overflow-y-auto rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
-        <h2 className="text-lg font-bold mb-4">Company List</h2>
-        <ul>
-          {companies.map((company) => (
-            <li
-              key={company.place_id}
-              onClick={() => setSelectedCompany(company)}
-              className="cursor-pointer hover:bg-gray-200"
-            >
-              {company.name}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="absolute bottom-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
-        {selectedCompany && (
-          <div>
-            <div className="flex">
-              <button className="px-4 py-2 bg-gray-400">Briefs</button>
-              <button className="px-4 py-2 bg-gray-300">People</button>
-              <button className="px-4 py-2 bg-gray-300">Connect</button>
-              <button className="px-4 py-2 bg-gray-300">Commute</button>
-              <button className="px-4 py-2 bg-gray-300">News</button>
-            </div>
-            <div className="p-4 bg-white">
-              <h2 className="text-lg font-bold">{selectedCompany.name}</h2>
-              <p>{selectedCompany.vicinity}</p>
-              <p>Rating: {selectedCompany.rating}</p>
-            </div>
+          <p className="transform rotate-90">Configuration</p>
+        </div>
+      ) : (
+        <div className="absolute top-1/2 left-8 transform -translate-y-1/2 h-3/4 w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+          <button
+            className="absolute top-2 right-2"
+            onClick={() => setConfigCollapsed(true)}
+          >
+            X
+          </button>
+          <h2 className="text-lg font-bold mb-4">Configuration</h2>
+          <div className="mb-4">
+            <label htmlFor="location" className="block font-bold mb-2">
+              Current Location
+            </label>
+            <input
+              type="text"
+              id="location"
+              className="w-full border border-gray-400 p-2"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
           </div>
-        )}
-      </div>
+          <div className="mb-4">
+            <label htmlFor="radius" className="block font-bold mb-2">
+              Search Radius (km)
+            </label>
+            <input
+              type="number"
+              id="radius"
+              className="w-full border border-gray-400 p-2"
+              value={radius}
+              onChange={(e) => setRadius(parseInt(e.target.value))}
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="transportation" className="block font-bold mb-2">
+              Transportation
+            </label>
+            <select
+              id="transportation"
+              className="w-full border border-gray-400 p-2"
+              value={transportation}
+              onChange={(e) => setTransportation(e.target.value)}
+            >
+              <option value="walking">Walking</option>
+              <option value="2-wheeler">2-Wheeler</option>
+              <option value="car">Car</option>
+              <option value="public-transport">Public Transport</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="duration" className="block font-bold mb-2">
+              Commute Duration (mins)
+            </label>
+            <select
+              id="duration"
+              className="w-full border border-gray-400 p-2"
+              value={duration}
+              onChange={(e) => setDuration(parseInt(e.target.value))}
+            >
+              <option value="15">15</option>
+              <option value="30">30</option>
+              <option value="45">45</option>
+              <option value="60">60</option>
+            </select>
+          </div>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={handleSearch}
+          >
+            Search
+          </button>
+        </div>
+      )}
+      {companyListCollapsed ? (
+        <div
+          className="absolute top-8 right-0 h-1/3 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
+          onClick={() => setCompanyListCollapsed(false)}
+        >
+          <p className="transform rotate-90">Company List</p>
+        </div>
+      ) : (
+        <div className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 overflow-y-auto rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+          <button
+            className="absolute top-2 right-2"
+            onClick={() => setCompanyListCollapsed(true)}
+          >
+            X
+          </button>
+          <h2 className="text-lg font-bold mb-4">Company List</h2>
+          <ul>
+            {companies.map((company) => (
+              <li
+                key={company.place_id}
+                onClick={() => setSelectedCompany(company)}
+                className="cursor-pointer hover:bg-gray-200"
+              >
+                {company.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {thingsToKnowCollapsed ? (
+        <div
+          className="absolute bottom-8 right-0 h-1/3 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
+          onClick={() => setThingsToKnowCollapsed(false)}
+        >
+          <p className="transform rotate-90">Things To Know</p>
+        </div>
+      ) : (
+        <div className="absolute bottom-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
+          <button
+            className="absolute top-2 right-2"
+            onClick={() => setThingsToKnowCollapsed(true)}
+          >
+            X
+          </button>
+          <h2 className="text-lg font-bold mb-4">Things To Know</h2>
+          {selectedCompany && (
+            <div>
+              <div className="flex">
+                <button className="px-4 py-2 bg-gray-400">Briefing</button>
+                <button className="px-4 py-2 bg-gray-300">People</button>
+                <button className="px-4 py-2 bg-gray-300">Connect</button>
+                <button className="px-4 py-2 bg-gray-300">Travel</button>
+                <button className="px-4 py-2 bg-gray-300">News</button>
+              </div>
+              <div className="p-4 bg-white">
+                <h2 className="text-lg font-bold">{selectedCompany.name}</h2>
+                <p>{selectedCompany.vicinity}</p>
+                <p>Rating: {selectedCompany.rating}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
