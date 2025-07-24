@@ -1,10 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import {
-  GoogleMap,
-  useJsApiLoader,
-  Autocomplete,
-} from "@react-google-maps/api";
+import { useState } from "react";
+import { GoogleMap, useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -27,26 +23,16 @@ export default function Home() {
   const [radius, setRadius] = useState(5);
   const [transportation, setTransportation] = useState("walking");
   const [duration, setDuration] = useState(30);
-  const [companies, setCompanies] = useState<google.maps.places.PlaceResult[]>(
-    []
-  );
-  const [selectedCompany, setSelectedCompany] =
-    useState<google.maps.places.PlaceResult | null>(null);
+  const [companies, setCompanies] = useState<google.maps.places.PlaceResult[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<google.maps.places.PlaceResult | null>(null);
   const [configCollapsed, setConfigCollapsed] = useState(false);
   const [companyListCollapsed, setCompanyListCollapsed] = useState(false);
   const [thingsToKnowCollapsed, setThingsToKnowCollapsed] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const handleSearch = () => {
-    if (!window.google || !window.google.maps) {
-      console.error("Google Maps JS not yet loaded.");
-      return;
-    }
-
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ address: location }, (results, status) => {
       if (status === "OK" && results) {
@@ -65,31 +51,15 @@ export default function Home() {
               type: "software_company",
             },
             (results, status) => {
-              if (
-                status === window.google.maps.places.PlacesServiceStatus.OK &&
-                results
-              ) {
+              if (status === "OK" && results) {
                 setCompanies(results);
-              } else {
-                console.warn("Nearby search failed:", status);
               }
             }
           );
         }
-      } else {
-        console.warn("Geocoding failed:", status);
       }
     });
   };
-
-  useEffect(() => {
-    if (isLoaded && inputRef.current && !autocompleteRef.current) {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(
-        inputRef.current,
-        { types: ["geocode"] }
-      );
-    }
-  }, [isLoaded]);
 
   return (
     <div className="h-screen w-screen">
@@ -114,13 +84,7 @@ export default function Home() {
           <p className="transform rotate-90">Configuration</p>
         </div>
       ) : (
-        <div
-          className="absolute top-1/2 left-8 transform -translate-y-1/2 h-5/6 w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg"
-          style={{
-            backdropFilter: "blur(10px)",
-            background: "rgba(255, 255, 255, 0.1)",
-          }}
-        >
+        <div className="absolute top-1/2 left-8 transform -translate-y-1/2 h-5/6 w-1/5 bg-gray-200 p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
           <button
             className="absolute top-2 right-2"
             onClick={() => setConfigCollapsed(true)}
@@ -130,27 +94,9 @@ export default function Home() {
           <h2 className="text-lg font-bold mb-4">Configuration</h2>
           <div className="mb-4">
             <label htmlFor="location" className="block font-bold mb-2">
-              Current Location
+              Location
             </label>
-            {isLoaded ? (
-              <Autocomplete
-                onPlaceChanged={() => {
-                  const place = autocompleteRef.current?.getPlace();
-                  if (place?.formatted_address) {
-                    setLocation(place.formatted_address);
-                  }
-                }}
-              >
-                <input
-                  ref={inputRef}
-                  type="text"
-                  id="location"
-                  className="w-full border border-gray-400 p-2"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                />
-              </Autocomplete>
-            ) : (
+            <Autocomplete>
               <input
                 type="text"
                 id="location"
@@ -158,7 +104,7 @@ export default function Home() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               />
-            )}
+            </Autocomplete>
             <button
               className="mt-2"
               onClick={() => {
@@ -171,17 +117,12 @@ export default function Home() {
                     map.panTo({ lat, lng });
                     map.setZoom(15);
                   }
-
-                  if (!window.google || !window.google.maps) return;
                   const geocoder = new window.google.maps.Geocoder();
-                  geocoder.geocode(
-                    { location: { lat, lng } },
-                    (results, status) => {
-                      if (status === "OK" && results) {
-                        setLocation(results[0].formatted_address);
-                      }
+                  geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                    if (status === "OK" && results) {
+                      setLocation(results[0].formatted_address);
                     }
-                  );
+                  });
                 });
               }}
             >
@@ -238,12 +179,12 @@ export default function Home() {
           >
             Search
           </button>
-          {lat && lng && (
-            <div className="mt-4">
-              <div>Longitude: {lng}</div>
-              <div>Latitude: {lat}</div>
-            </div>
-          )}
+        {lat && lng && (
+          <div className="mt-4">
+            <div>Longitude: {lng}</div>
+            <div>Latitude: {lat}</div>
+          </div>
+        )}
         </div>
       )}
       {companyListCollapsed ? (
@@ -254,13 +195,7 @@ export default function Home() {
           <p className="transform rotate-90">Company List</p>
         </div>
       ) : (
-        <div
-          className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 overflow-y-auto rounded-lg shadow-lg"
-          style={{
-            backdropFilter: "blur(10px)",
-            background: "rgba(255, 255, 255, 0.1)",
-          }}
-        >
+        <div className="absolute top-8 right-8 w-1/3 h-1/3 bg-white p-4 overflow-y-auto rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
           <button
             className="absolute top-2 right-2"
             onClick={() => setCompanyListCollapsed(true)}
@@ -289,13 +224,7 @@ export default function Home() {
           <p className="transform rotate-90">Things To Know</p>
         </div>
       ) : (
-        <div
-          className="absolute bottom-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg"
-          style={{
-            backdropFilter: "blur(10px)",
-            background: "rgba(255, 255, 255, 0.1)",
-          }}
-        >
+        <div className="absolute bottom-8 right-8 w-1/3 h-1/3 bg-white p-4 rounded-lg shadow-lg" style={{ backdropFilter: 'blur(10px)', background: 'rgba(255, 255, 255, 0.1)' }}>
           <button
             className="absolute top-2 right-2"
             onClick={() => setThingsToKnowCollapsed(true)}
