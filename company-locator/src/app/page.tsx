@@ -15,7 +15,7 @@ const center = {
 export default function Home() {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "0000",
+    googleMapsApiKey: process.env.googleMapsApiKey!,
   });
 
   const [location, setLocation] = useState("");
