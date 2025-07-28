@@ -143,3 +143,21 @@ body {
 .simple-button img {
   @apply w-5 h-5;
 }
+
+input,
+select {
+  @apply rounded-md;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}

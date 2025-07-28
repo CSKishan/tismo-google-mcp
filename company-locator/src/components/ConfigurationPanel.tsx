@@ -90,6 +90,10 @@ const ConfigurationPanel = ({
     }
   };
 
+  useEffect(() => {
+    setValue(location);
+  }, [location]);
+
   if (configCollapsed) {
     return (
       <div

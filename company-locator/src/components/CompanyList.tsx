@@ -87,27 +87,29 @@ const CompanyList = ({
           </li>
         ))}
       </ul>
-      <div className="flex justify-between mt-4">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(currentPage - 1)}
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage} of{" "}
-          {Math.ceil(filteredCompanies.length / companiesPerPage)}
-        </span>
-        <button
-          disabled={
-            currentPage ===
-            Math.ceil(filteredCompanies.length / companiesPerPage)
-          }
-          onClick={() => setCurrentPage(currentPage + 1)}
-        >
-          Next
-        </button>
-      </div>
+      {Math.ceil(filteredCompanies.length / companiesPerPage) > 1 && (
+        <div className="flex justify-between mt-4">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of{" "}
+            {Math.ceil(filteredCompanies.length / companiesPerPage)}
+          </span>
+          <button
+            disabled={
+              currentPage ===
+              Math.ceil(filteredCompanies.length / companiesPerPage)
+            }
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
