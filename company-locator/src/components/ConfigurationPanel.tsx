@@ -1,4 +1,4 @@
-import { Autocomplete } from "@react-google-maps/api";
+import { useAutocomplete } from "@react-google-maps/api";
 import Image from "next/image";
 import { useRef, useEffect } from "react";
 
@@ -60,16 +60,25 @@ const ConfigurationPanel = ({
   lng,
 }: ConfigurationPanelProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const {
+    ref,
+    onLoad,
+    getPlace,
+  } = useAutocomplete({
+    onPlaceChanged: () => {
+      const place = getPlace();
+      if (place?.formatted_address) {
+        setLocation(place.formatted_address);
+      }
+    },
+    types: ["geocode"],
+  });
 
   useEffect(() => {
-    if (isLoaded && inputRef.current && !autocompleteRef.current) {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(
-        inputRef.current,
-        { types: ["geocode"] }
-      );
+    if (inputRef.current) {
+      ref(inputRef.current);
     }
-  }, [isLoaded]);
+  }, [ref]);
 
   if (configCollapsed) {
     return (
@@ -153,33 +162,14 @@ const ConfigurationPanel = ({
             />
           </button>
         </div>
-        {isLoaded ? (
-          <Autocomplete
-            onPlaceChanged={() => {
-              const place = autocompleteRef.current?.getPlace();
-              if (place?.formatted_address) {
-                setLocation(place.formatted_address);
-              }
-            }}
-          >
-            <input
-              ref={inputRef}
-              type="text"
-              id="location"
-              className="w-full border border-gray-400 p-2"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </Autocomplete>
-        ) : (
-          <input
-            type="text"
-            id="location"
-            className="w-full border border-gray-400 p-2"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        )}
+        <input
+          ref={inputRef}
+          type="text"
+          id="location"
+          className="w-full border border-gray-400 p-2"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
       </div>
       <div className="mb-4">
         <label htmlFor="radius" className="block font-bold mb-2">

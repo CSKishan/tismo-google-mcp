@@ -6,11 +6,19 @@ import ConfigurationPanel from "../components/ConfigurationPanel";
 import CompanyList from "../components/CompanyList";
 import CompanyDetails from "../components/CompanyDetails";
 
+const LIBRARIES: (
+  | "places"
+  | "drawing"
+  | "geometry"
+  | "localContext"
+  | "visualization"
+)[] = ["places"];
+
 export default function Home() {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    libraries: ["places"],
+    libraries: LIBRARIES,
   });
 
   const [location, setLocation] = useState("");
