@@ -5,6 +5,7 @@ import Map from "../components/Map";
 import ConfigurationPanel from "../components/ConfigurationPanel";
 import CompanyList from "../components/CompanyList";
 import CompanyDetails from "../components/CompanyDetails";
+import { searchCompanies } from "@/utils/search";
 
 const LIBRARIES: (
   | "places"
@@ -44,9 +45,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
 
-import { searchCompanies } from "../utils/search";
-
-// ... (imports and other code)
+  // ... (imports and other code)
 
   const handleSearch = async () => {
     const geocoder = new window.google.maps.Geocoder();

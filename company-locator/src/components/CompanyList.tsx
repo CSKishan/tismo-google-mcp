@@ -60,8 +60,8 @@ const CompanyList = ({
         >
           _
         </button>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">Company List</h2>
+        <div className="flex items-center mb-4">
+          <h2 className="text-lg font-bold mr-5">Company List</h2>
           <input
             type="text"
             placeholder="Search..."
@@ -100,7 +100,8 @@ const CompanyList = ({
         </span>
         <button
           disabled={
-            currentPage === Math.ceil(filteredCompanies.length / companiesPerPage)
+            currentPage ===
+            Math.ceil(filteredCompanies.length / companiesPerPage)
           }
           onClick={() => setCurrentPage(currentPage + 1)}
         >

@@ -1,6 +1,9 @@
-import { useAutocomplete } from "@react-google-maps/api";
+import usePlacesAutocomplete, {
+  getGeocode,
+  getLatLng,
+} from "use-places-autocomplete";
 import Image from "next/image";
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
 
 interface ConfigurationPanelProps {
   configCollapsed: boolean;
@@ -59,26 +62,33 @@ const ConfigurationPanel = ({
   lat,
   lng,
 }: ConfigurationPanelProps) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const {
-    ref,
-    onLoad,
-    getPlace,
-  } = useAutocomplete({
-    onPlaceChanged: () => {
-      const place = getPlace();
-      if (place?.formatted_address) {
-        setLocation(place.formatted_address);
-      }
+    ready,
+    value,
+    suggestions: { status, data },
+    setValue,
+    clearSuggestions,
+  } = usePlacesAutocomplete({
+    debounce: 300,
+    requestOptions: {
+      types: ["geocode"],
     },
-    types: ["geocode"],
   });
 
-  useEffect(() => {
-    if (inputRef.current) {
-      ref(inputRef.current);
+  const handleSelect = async (description: string) => {
+    setValue(description, false);
+    clearSuggestions();
+    setLocation(description);
+
+    try {
+      const results = await getGeocode({ address: description });
+      const { lat, lng } = await getLatLng(results[0]);
+      setLat(lat);
+      setLng(lng);
+    } catch (error) {
+      console.error("Error fetching coordinates for selected place", error);
     }
-  }, [ref]);
+  };
 
   if (configCollapsed) {
     return (
@@ -148,6 +158,7 @@ const ConfigurationPanel = ({
                   (results, status) => {
                     if (status === "OK" && results) {
                       setLocation(results[0].formatted_address);
+                      setValue(results[0].formatted_address);
                     }
                   }
                 );
@@ -163,13 +174,29 @@ const ConfigurationPanel = ({
           </button>
         </div>
         <input
-          ref={inputRef}
-          type="text"
           id="location"
           className="w-full border border-gray-400 p-2"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setLocation(e.target.value);
+          }}
+          disabled={!ready}
+          placeholder="Enter a location"
         />
+        {status === "OK" && (
+          <div className="border border-gray-300 mt-1 max-h-40 overflow-y-auto bg-white z-10 shadow-md rounded-md">
+            {data.map(({ place_id, description }) => (
+              <div
+                key={place_id}
+                className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-black"
+                onClick={() => handleSelect(description)}
+              >
+                {description}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <div className="mb-4">
         <label htmlFor="radius" className="block font-bold mb-2">
