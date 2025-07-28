@@ -41,6 +41,8 @@ export default function Home() {
   const [radiusUnit, setRadiusUnit] = useState("km");
   const [companyType, setCompanyType] = useState("All");
   const [customCompanyType, setCustomCompanyType] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
 import { searchCompanies } from "../utils/search";
 
@@ -151,6 +153,10 @@ import { searchCompanies } from "../utils/search";
         companies={companies}
         setSelectedCompany={setSelectedCompany}
         map={map}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
       />
       <CompanyDetails
         thingsToKnowCollapsed={thingsToKnowCollapsed}

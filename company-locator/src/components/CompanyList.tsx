@@ -4,6 +4,10 @@ interface CompanyListProps {
   companies: google.maps.places.PlaceResult[];
   setSelectedCompany: (company: google.maps.places.PlaceResult | null) => void;
   map: google.maps.Map | null;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 }
 
 const CompanyList = ({
@@ -12,7 +16,20 @@ const CompanyList = ({
   companies,
   setSelectedCompany,
   map,
+  currentPage,
+  setCurrentPage,
+  searchTerm,
+  setSearchTerm,
 }: CompanyListProps) => {
+  const companiesPerPage = 20;
+  const filteredCompanies = companies.filter((company) =>
+    company.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const paginatedCompanies = filteredCompanies.slice(
+    (currentPage - 1) * companiesPerPage,
+    currentPage * companiesPerPage
+  );
+
   if (companyListCollapsed) {
     return (
       <div
@@ -43,10 +60,19 @@ const CompanyList = ({
         >
           _
         </button>
-        <h2 className="text-lg font-bold mb-4">Company List</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold">Company List</h2>
+          <input
+            type="text"
+            placeholder="Search..."
+            className="border border-gray-400 p-2"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
       <ul className="overflow-y-auto">
-        {companies.map((company) => (
+        {paginatedCompanies.map((company) => (
           <li
             key={company.place_id}
             onClick={() => setSelectedCompany(company)}
@@ -61,6 +87,26 @@ const CompanyList = ({
           </li>
         ))}
       </ul>
+      <div className="flex justify-between mt-4">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(currentPage - 1)}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of{" "}
+          {Math.ceil(filteredCompanies.length / companiesPerPage)}
+        </span>
+        <button
+          disabled={
+            currentPage === Math.ceil(filteredCompanies.length / companiesPerPage)
+          }
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
