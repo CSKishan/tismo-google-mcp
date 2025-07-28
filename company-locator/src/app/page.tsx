@@ -42,9 +42,13 @@ export default function Home() {
   const [companyType, setCompanyType] = useState("All");
   const [customCompanyType, setCustomCompanyType] = useState("");
 
-  const handleSearch = () => {
+import { searchCompanies } from "../utils/search";
+
+// ... (imports and other code)
+
+  const handleSearch = async () => {
     const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ address: location }, (results, status) => {
+    geocoder.geocode({ address: location }, async (results, status) => {
       if (status === "OK" && results) {
         const lat = results[0].geometry?.location?.lat();
         const lng = results[0].geometry?.location?.lng();
@@ -75,81 +79,22 @@ export default function Home() {
             setCurrentLocationMarker(marker);
           }
 
-          const service = new window.google.maps.places.PlacesService(
-            document.createElement("div")
-          );
-
-          const query =
-            companyType === "Custom"
-              ? customCompanyType
-              : companyType === "All"
-              ? "software companies"
-              : companyType.toLowerCase();
-
-          // First try with textSearch for better accuracy
-          service.textSearch(
-            {
-              location: { lat, lng },
-              radius: radius * (radiusUnit === "km" ? 1000 : 1),
-              query,
-            },
-            (textResults, textStatus) => {
-              if (
-                textStatus === google.maps.places.PlacesServiceStatus.OK &&
-                textResults
-              ) {
-                const allResults = [...textResults];
-
-                // Optional: run nearbySearch for broader discovery
-                service.nearbySearch(
-                  {
-                    location: { lat, lng },
-                    radius: radius * (radiusUnit === "km" ? 1000 : 1),
-                    keyword: query,
-                  },
-                  (nearbyResults, nearbyStatus) => {
-                    if (
-                      nearbyStatus ===
-                        google.maps.places.PlacesServiceStatus.OK &&
-                      nearbyResults
-                    ) {
-                      // Deduplicate by place_id
-                      const existingIds = new Set(
-                        allResults.map((p) => p.place_id)
-                      );
-                      nearbyResults.forEach((p) => {
-                        if (!existingIds.has(p.place_id)) {
-                          allResults.push(p);
-                        }
-                      });
-                    }
-                    setCompanies(allResults);
-                  }
-                );
-              } else {
-                console.error("Text search failed:", textStatus);
-                // Fallback to nearbySearch only
-                service.nearbySearch(
-                  {
-                    location: { lat, lng },
-                    radius: radius * (radiusUnit === "km" ? 1000 : 1),
-                    keyword: query,
-                  },
-                  (nearbyResults, nearbyStatus) => {
-                    if (
-                      nearbyStatus ===
-                        google.maps.places.PlacesServiceStatus.OK &&
-                      nearbyResults
-                    ) {
-                      setCompanies(nearbyResults);
-                    } else {
-                      console.error("Nearby search also failed:", nearbyStatus);
-                    }
-                  }
-                );
-              }
+          if (map) {
+            try {
+              const companies = await searchCompanies(
+                map,
+                lat,
+                lng,
+                radius,
+                radiusUnit,
+                companyType,
+                customCompanyType
+              );
+              setCompanies(companies);
+            } catch (error) {
+              console.error("Error searching for companies:", error);
             }
-          );
+          }
         }
       }
     });
