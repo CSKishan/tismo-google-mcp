@@ -25,3 +25,121 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+/* Configuration Tab */
+
+.config-panel {
+  @apply absolute top-1/2 left-0 transform -translate-y-1/2 h-5/6 
+    rounded-r-xl backdrop-blur-md border border-black/50 shadow-lg text-black font-semibold 
+    flex items-center justify-center cursor-pointer 
+    bg-gradient-to-t bg-[length:200%_200%] overflow-hidden;
+  transition: width 0.5s ease, background-position 0.5s ease,
+    background-color 0.5s ease, box-shadow 0.5s ease;
+  will-change: width, background-position, background-color, box-shadow;
+}
+
+.config-panel-collapsed {
+  width: 3rem;
+  background-position: 0% 0%;
+  background-image: linear-gradient(
+    to top,
+    rgba(147, 197, 253, 0.2),
+    rgba(59, 130, 246, 0.3)
+  );
+}
+
+.config-panel-expanded {
+  width: 15rem;
+  background-position: 100% 100%;
+  background-image: linear-gradient(
+    to top,
+    rgba(96, 165, 250, 0.3),
+    rgba(37, 99, 235, 0.4)
+  );
+}
+
+.config-panel:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Company List */
+
+.company-panel {
+  @apply absolute top-8 right-0 h-1/3 
+          rounded-l-xl backdrop-blur-md border border-black/50 shadow-lg text-black font-semibold
+          flex items-center justify-center cursor-pointer 
+          bg-gradient-to-t bg-[length:200%_200%] overflow-hidden;
+  transition: width 0.5s ease, background-position 0.5s ease,
+    background-color 0.5s ease, box-shadow 0.5s ease;
+  will-change: width, background-position, background-color, box-shadow;
+}
+
+.company-panel-collapsed {
+  width: 3rem; /* w-12 */
+  background-position: 0% 0%;
+  background-image: linear-gradient(
+    to top,
+    rgba(147, 197, 253, 0.2),
+    rgba(59, 130, 246, 0.3)
+  );
+}
+
+.company-panel-expanded {
+  width: 15rem; /* w-60 */
+  background-position: 100% 100%;
+  background-image: linear-gradient(
+    to top,
+    rgba(96, 165, 250, 0.3),
+    rgba(37, 99, 235, 0.4)
+  );
+}
+
+.company-panel:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Things to Know */
+
+.things-to-know {
+  @apply absolute bottom-8 right-0 h-1/3
+          rounded-l-xl backdrop-blur-md border border-black/50 shadow-lg text-black font-semibold
+          flex items-center justify-center cursor-pointer 
+          bg-gradient-to-t bg-[length:200%_200%] overflow-hidden;
+  transition: width 0.5s ease, background-position 0.5s ease,
+    background-color 0.5s ease, box-shadow 0.5s ease;
+  will-change: width, background-position, background-color, box-shadow;
+}
+
+.things-to-know-collapsed {
+  width: 3rem; /* w-12 */
+  background-position: 0% 0%;
+  background-image: linear-gradient(
+    to top,
+    rgba(147, 197, 253, 0.2),
+    rgba(59, 130, 246, 0.3)
+  );
+}
+
+.things-to-know-expanded {
+  width: 15rem; /* w-60 */
+  background-position: 100% 100%;
+  background-image: linear-gradient(
+    to top,
+    rgba(96, 165, 250, 0.3),
+    rgba(37, 99, 235, 0.4)
+  );
+}
+
+.things-to-know:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+.simple-button {
+  @apply mb-1 px-2 py-2 flex items-center gap-2 rounded-md 
+         bg-white text-white font-medium cursor-pointer 
+         hover:bg-gray-200 transition-colors duration-300;
+}
+
+.simple-button img {
+  @apply w-5 h-5;
+}

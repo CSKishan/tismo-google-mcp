@@ -7,6 +7,8 @@ import {
   Marker,
 } from "@react-google-maps/api";
 
+import Image from "next/image";
+
 const containerStyle = {
   width: "100%",
   height: "100%",
@@ -247,10 +249,14 @@ export default function Home() {
       )}
       {configCollapsed ? (
         <div
-          className="absolute top-1/2 left-0 transform -translate-y-1/2 h-5/6 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
-          onClick={() => setConfigCollapsed(false)}
+          className={`group config-panel ${
+            configCollapsed ? "config-panel-collapsed" : "config-panel-expanded"
+          }`}
+          onClick={() => setConfigCollapsed(!configCollapsed)}
         >
-          <p className="transform rotate-90">Configuration</p>
+          <p className="config-panel-text transform rotate-90 whitespace-nowrap">
+            Configuration
+          </p>
         </div>
       ) : (
         <div
@@ -268,9 +274,57 @@ export default function Home() {
           </button>
           <h2 className="text-lg font-bold mb-4">Configuration</h2>
           <div className="mb-4">
-            <label htmlFor="location" className="block font-bold mb-2">
-              Location
-            </label>
+            <div className="flex justify-between items-end">
+              <label htmlFor="location" className="block font-bold mb-2">
+                Location
+              </label>
+              <button
+                className="simple-button"
+                onClick={() => {
+                  navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    setLat(lat);
+                    setLng(lng);
+                    if (map) {
+                      map.panTo({ lat, lng });
+                      map.setZoom(15);
+                      if (currentLocationMarker) {
+                        currentLocationMarker.setMap(null);
+                      }
+                      const marker = new window.google.maps.Marker({
+                        position: { lat, lng },
+                        map,
+                        icon: {
+                          path: window.google.maps.SymbolPath.CIRCLE,
+                          scale: 10,
+                          fillColor: "blue",
+                          fillOpacity: 1,
+                          strokeWeight: 0,
+                        },
+                      });
+                      setCurrentLocationMarker(marker);
+                    }
+                    const geocoder = new window.google.maps.Geocoder();
+                    geocoder.geocode(
+                      { location: { lat, lng } },
+                      (results, status) => {
+                        if (status === "OK" && results) {
+                          setLocation(results[0].formatted_address);
+                        }
+                      }
+                    );
+                  });
+                }}
+              >
+                <Image
+                  src="/loc.png"
+                  alt="current-location"
+                  width={50}
+                  height={50}
+                />
+              </button>
+            </div>
             {isLoaded ? (
               <Autocomplete
                 onPlaceChanged={() => {
@@ -298,57 +352,6 @@ export default function Home() {
                 onChange={(e) => setLocation(e.target.value)}
               />
             )}
-            <button
-              className="mt-2"
-              onClick={() => {
-                navigator.geolocation.getCurrentPosition((position) => {
-                  const lat = position.coords.latitude;
-                  const lng = position.coords.longitude;
-                  setLat(lat);
-                  setLng(lng);
-                  if (map) {
-                    map.panTo({ lat, lng });
-                    map.setZoom(15);
-                    if (currentLocationMarker) {
-                      currentLocationMarker.setMap(null);
-                    }
-                    const marker = new window.google.maps.Marker({
-                      position: { lat, lng },
-                      map,
-                      icon: {
-                        path: window.google.maps.SymbolPath.CIRCLE,
-                        scale: 10,
-                        fillColor: "blue",
-                        fillOpacity: 1,
-                        strokeWeight: 0,
-                      },
-                    });
-                    setCurrentLocationMarker(marker);
-                  }
-                  const geocoder = new window.google.maps.Geocoder();
-                  geocoder.geocode(
-                    { location: { lat, lng } },
-                    (results, status) => {
-                      if (status === "OK" && results) {
-                        setLocation(results[0].formatted_address);
-                      }
-                    }
-                  );
-                });
-              }}
-            >
-              O
-            </button>
-            <button
-              className="mt-2"
-              onClick={() => {
-                if (map) {
-                  map.setOptions({ draggableCursor: "crosshair" });
-                }
-              }}
-            >
-              Select from Map
-            </button>
           </div>
           <div className="mb-4">
             <label htmlFor="radius" className="block font-bold mb-2">
@@ -440,7 +443,7 @@ export default function Home() {
               <option value="60">60</option>
             </select>
           </div>
-          <div className="flex">
+          <div className="flex justify-between">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               onClick={handleSearch}
@@ -463,19 +466,29 @@ export default function Home() {
             </button>
           </div>
           {lat && lng && (
-            <div className="mt-4">
-              <div>Longitude: {lng}</div>
-              <div>Latitude: {lat}</div>
+            <div className="mt-2 bottom-4 absolute w-[90%]">
+              <div className="flex justify-between">
+                <span>Longitude:</span>
+                <span className="font-semibold text-blue-500">{lng}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Latitude:</span>
+                <span className="font-semibold text-blue-400">{lat}</span>
+              </div>
             </div>
           )}
         </div>
       )}
       {companyListCollapsed ? (
         <div
-          className="absolute top-8 right-0 h-1/3 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
-          onClick={() => setCompanyListCollapsed(false)}
+          className={`group company-panel ${
+            companyListCollapsed
+              ? "company-panel-collapsed"
+              : "company-panel-expanded"
+          }`}
+          onClick={() => setCompanyListCollapsed(!companyListCollapsed)}
         >
-          <p className="transform rotate-90">Company List</p>
+          <p className="transform rotate-90 whitespace-nowrap">Company List</p>
         </div>
       ) : (
         <div
@@ -514,10 +527,16 @@ export default function Home() {
       )}
       {thingsToKnowCollapsed ? (
         <div
-          className="absolute bottom-8 right-0 h-1/3 w-12 bg-gradient-to-t from-blue-500 to-blue-700 text-white flex items-center justify-center cursor-pointer"
-          onClick={() => setThingsToKnowCollapsed(false)}
+          className={`group things-to-know ${
+            thingsToKnowCollapsed
+              ? "things-to-know-collapsed"
+              : "things-to-know-expanded"
+          }`}
+          onClick={() => setThingsToKnowCollapsed(!thingsToKnowCollapsed)}
         >
-          <p className="transform rotate-90">Things To Know</p>
+          <p className="transform rotate-90 whitespace-nowrap">
+            Things to Know
+          </p>
         </div>
       ) : (
         <div
